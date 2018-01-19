@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour {
 
     private Vector3 playerVel, playerDir;
 
-    private bool isGrounded = true;
+    private bool isGrounded = false;
 
     private float deltaTime;
 
@@ -53,8 +53,6 @@ public class PlayerController : MonoBehaviour {
             isGrounded = true;
             transform.position = new Vector3(transform.position.x, 0, transform.position.y);
         }
-
-        Debug.Log(playerVel);
     }
 
     public void DirectionInput (float horiz, float vert) {
