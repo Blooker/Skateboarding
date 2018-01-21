@@ -9,8 +9,14 @@ public class PlayerCollision : MonoBehaviour {
 
     private WheelCollider currentFrontColl, currentBackColl;
 
-	// Use this for initialization
-	void Start () {
+    private PlayerController playerController;
+
+    private void Awake() {
+        playerController = GetComponent<PlayerController>();
+    }
+
+    // Use this for initialization
+    void Start () {
 		
 	}
 	
@@ -19,7 +25,8 @@ public class PlayerCollision : MonoBehaviour {
         GetCollOrientation();
 
         if (currentFrontColl.colliding) {
-            Debug.Log(currentFrontColl.lastPos);
+            playerController.SetCurGroundPos(frontWheelColl.lastPos);
+            playerController.SetCurGroundNorm(frontWheelColl.lastCollNormal);
         }
 	}
 

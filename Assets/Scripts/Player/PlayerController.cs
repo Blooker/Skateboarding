@@ -18,15 +18,18 @@ public class PlayerController : MonoBehaviour {
 
     private float moveSpeed, rotSpeed, jumpAmount;
 
-    private Vector3 playerVel, playerDir;
+    private Vector3 playerVel, moveDir, playerDir;
 
     private bool isGrounded = false;
+    private Vector3 curGroundPos, curGroundNorm;
 
     private float deltaTime;
 
 	// Use this for initialization
 	void Start () {
         playerVel = new Vector3();
+        curGroundPos = new Vector3();
+
         rotSpeed = maxRotSpeed;
     }
 	
@@ -37,13 +40,26 @@ public class PlayerController : MonoBehaviour {
             deltaTime = 0.15f;
         }
 
-        transform.rotation = Quaternion.Euler(playerDir);
+        moveSpeed = 5f;
 
-        playerVel.x = playerVel.z = transform.forward.x * moveSpeed;
+        transform.rotation = Quaternion.Euler(moveDir);
+        playerGraphics.rotation = Quaternion.Euler(playerDir);
+
+        playerVel.x = transform.forward.x * moveSpeed;
+        playerVel.z = transform.forward.z * moveSpeed;
 
         if (isGrounded) {
             playerVel.y = 0;
-        } else {
+            transform.position = new Vector3(transform.position.x, curGroundPos.y, transform.position.z);
+
+            Vector3 floorDir = curGroundNorm;
+            Debug.Log(floorDir);
+            Debug.DrawRay(transform.position, floorDir, Color.red, 0.1f);
+
+            moveDir = new Vector3(floorDir.x, moveDir.y, moveDir.z);
+            playerDir = moveDir;
+        }
+        else {
             playerVel += gravity * deltaTime;
         }
 
@@ -51,7 +67,6 @@ public class PlayerController : MonoBehaviour {
 
         if (transform.position.y <= 0) {
             isGrounded = true;
-            transform.position = new Vector3(transform.position.x, 0, transform.position.y);
         }
     }
 
@@ -60,6 +75,8 @@ public class PlayerController : MonoBehaviour {
             transform.Translate(0, 0.5f, 0);
             playerDir += new Vector3(vert * rotSpeed, horiz * rotSpeed, 0);
             transform.Translate(0, -0.5f, 0);
+        } else {
+            moveDir += new Vector3(vert * rotSpeed, horiz * rotSpeed, 0);
         }
     }
 
@@ -81,6 +98,14 @@ public class PlayerController : MonoBehaviour {
             playerGraphics.localScale = Vector3.one;
             isGrounded = false;
         }
+    }
+
+    public void SetCurGroundPos (Vector3 _groundPos) {
+        curGroundPos = _groundPos;
+    }
+
+    public void SetCurGroundNorm (Vector3 _groundNorm) {
+        curGroundNorm = _groundNorm;
     }
 
     public Transform GetLookTarget () {
