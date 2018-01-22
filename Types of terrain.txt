@@ -1,0 +1,7 @@
+Flat ground: Move char forward along flat surface
+
+Ramp: Move char forward along angled surface, get some air at end
+
+Curved ramp/quarter pipe/half pipe: Use splines to snap char to curve?
+
+Bowl: Same as above, except snap player to edge of bowl. Gotta think about how the player will be able to exit bowl

@@ -22,14 +22,15 @@ public class PlayerInput : MonoBehaviour {
         horizAxis = Input.GetAxisRaw("Horizontal");
         vertAxis = Input.GetAxisRaw("Vertical");
 
-        playerController.DirectionInput(horizAxis, vertAxis);
+        //playerController.DirectionInput(horizAxis, vertAxis);
 
         if (Input.GetKey(KeyCode.Space)) {
-            playerController.ChargeJump();
+            //playerController.ChargeJump();
         }
 
         if (Input.GetKeyUp(KeyCode.Space)) {
-            playerController.Jump();
+            //playerController.Jump();
         }
+
     }
 }

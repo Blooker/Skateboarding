@@ -5,110 +5,82 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 
     [SerializeField]
-    private Vector3 gravity;
+    private GameObject playerModel;
+
+    [Header("Wheels")]
+    [SerializeField]
+    private GameObject frontWheel;
+    [SerializeField]
+    private GameObject backWheel;
 
     [SerializeField]
-    private float maxMoveSpeed, maxRotSpeed;
+    private float floorCheckUpAmount;
 
-    [SerializeField]
-    private float minJumpSpeed, maxJumpSpeed, jumpChargeAmount;
+    private Vector3 boardDir;
 
-    [SerializeField]
-    private Transform lookTarget, playerGraphics;
+    private bool grounded = true;
 
-    private float moveSpeed, rotSpeed, jumpAmount;
+    private Rigidbody rigid;
 
-    private Vector3 playerVel, moveDir, playerDir;
-
-    private bool isGrounded = false;
-    private Vector3 curGroundPos, curGroundNorm;
-
-    private float deltaTime;
-
-	// Use this for initialization
-	void Start () {
-        playerVel = new Vector3();
-        curGroundPos = new Vector3();
-
-        rotSpeed = maxRotSpeed;
+    private void Awake() {
+        //rigid = GetComponent<Rigidbody>();
     }
+
+    // Use this for initialization
+    void Start () {
+		
+	}
 	
 	// Update is called once per frame
 	void Update () {
-        deltaTime = Time.deltaTime;
-        if (deltaTime > 0.15f) {
-            deltaTime = 0.15f;
+        transform.position += transform.forward * Time.deltaTime * 5;
+
+        if (grounded) {
+            boardDir = CalcBoardDir();
+
+            if (boardDir != Vector3.zero) {
+                transform.LookAt(transform.position + boardDir);
+            }
         }
 
-        moveSpeed = 5f;
-
-        transform.rotation = Quaternion.Euler(moveDir);
-        playerGraphics.rotation = Quaternion.Euler(playerDir);
-
-        playerVel.x = transform.forward.x * moveSpeed;
-        playerVel.z = transform.forward.z * moveSpeed;
-
-        if (isGrounded) {
-            playerVel.y = 0;
-            transform.position = new Vector3(transform.position.x, curGroundPos.y, transform.position.z);
-
-            Vector3 floorDir = curGroundNorm;
-            Debug.Log(floorDir);
-            Debug.DrawRay(transform.position, floorDir, Color.red, 0.1f);
-
-            moveDir = new Vector3(floorDir.x, moveDir.y, moveDir.z);
-            playerDir = moveDir;
-        }
-        else {
-            playerVel += gravity * deltaTime;
-        }
-
-        transform.position += playerVel * deltaTime;
-
-        if (transform.position.y <= 0) {
-            isGrounded = true;
-        }
     }
 
-    public void DirectionInput (float horiz, float vert) {
-        if (!isGrounded) {
-            transform.Translate(0, 0.5f, 0);
-            playerDir += new Vector3(vert * rotSpeed, horiz * rotSpeed, 0);
-            transform.Translate(0, -0.5f, 0);
+    Vector3 CalcBoardDir () {
+        Vector3 _boardDir = Vector3.zero;
+        Vector3 frontPoint = GetFloorPoint(frontWheel), backPoint = GetFloorPoint(backWheel);
+
+        //Debug.Log("frontNorm: " + frontNorm.ToString() + ", backNorm: " + backNorm.ToString());
+
+        if (frontPoint == Vector3.zero || backPoint == Vector3.zero)
+            return Vector3.zero;
+
+        if (playerModel.transform.rotation.y > 90 && playerModel.transform.rotation.y < 270) {
+            _boardDir = backPoint - frontPoint;
         } else {
-            moveDir += new Vector3(vert * rotSpeed, horiz * rotSpeed, 0);
+            _boardDir = frontPoint - backPoint;
         }
+
+        Debug.DrawLine(transform.position, transform.position + _boardDir);
+
+        return _boardDir;
     }
 
-    public void ChargeJump () {
-        if (isGrounded) {
-            if (jumpAmount < 1)
-                jumpAmount += jumpChargeAmount * deltaTime;
+    Vector3 GetFloorPoint (GameObject wheel) {
+        Vector3 point = Vector3.zero;
 
-            float squishAmount = jumpAmount * 0.3f;
-            playerGraphics.localScale = new Vector3(playerGraphics.localScale.x, 1 - squishAmount, playerGraphics.localScale.z);
+        transform.Translate(transform.up * floorCheckUpAmount);
+
+        RaycastHit hit;
+        Ray ray = new Ray(wheel.transform.position, -wheel.transform.right);
+
+        if (Physics.Raycast(ray, out hit, 1)) {
+            point = hit.point;
+            Debug.DrawLine(ray.origin, point, Color.red);
+
         }
-    }
 
-    public void Jump () {
-        if (isGrounded) {
-            playerVel.y += jumpAmount.Remap(0, 1, minJumpSpeed, maxJumpSpeed);
-            jumpAmount = 0;
+        transform.Translate(transform.up * -floorCheckUpAmount);
 
-            playerGraphics.localScale = Vector3.one;
-            isGrounded = false;
-        }
-    }
-
-    public void SetCurGroundPos (Vector3 _groundPos) {
-        curGroundPos = _groundPos;
-    }
-
-    public void SetCurGroundNorm (Vector3 _groundNorm) {
-        curGroundNorm = _groundNorm;
-    }
-
-    public Transform GetLookTarget () {
-        return lookTarget;
+        return point;
     }
 }
